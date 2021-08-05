@@ -1,4 +1,5 @@
 VERSION=$(shell cat VERSION)
+PROVIDER_NAME=devotedhealth/looker
 export BASE_BINARY_NAME=terraform-provider-looker_v$(VERSION)
 
 .PHONY: help
@@ -38,3 +39,12 @@ check-docs: docs ## check that docs have been generated
 check-mod: ## check go.mod is up-to-date
 	@go mod tidy
 	@git diff --exit-code -- go.mod go.sum
+
+install-tf: build ## installs plugin where terraform can find it
+	mkdir -p $(HOME)/.terraform.d/plugins/registry.terraform.io/$(PROVIDER_NAME)/$(VERSION)/linux_amd64
+	cp ./build/$(BASE_BINARY_NAME) $(HOME)/.terraform.d/plugins/registry.terraform.io/$(PROVIDER_NAME)/$(VERSION)/linux_amd64/$(BASE_BINARY_NAME)
+.PHONY: install-tf
+
+uninstall-tf: build ## uninstalls plugin from where terraform can find it
+	rm $(HOME)/.terraform.d/plugins/registry.terraform.io/$(PROVIDER_NAME)/$(VERSION)/linux_amd64/$(BASE_BINARY_NAME) 2>/dev/null
+.PHONY: install-tf
