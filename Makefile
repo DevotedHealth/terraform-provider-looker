@@ -7,8 +7,8 @@ help:
 
 .PHONY: vendor
 vendor: go.sum ## vendor dependencies
-	@GO111MODULE=on go mod vendor
-	@GO111MODULE=on go mod tidy
+	@go mod vendor
+	@go mod tidy
 
 .PHONY: lint
 lint: ## run linter
