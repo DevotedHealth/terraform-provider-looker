@@ -33,7 +33,7 @@ jobs:
         run: make check-mod
 
       - name: Check doc
-        run: make check-doc
+        run: make check-docs
 
       - name: Test
         run: make test
