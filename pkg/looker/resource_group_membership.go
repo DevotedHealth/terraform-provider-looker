@@ -1,7 +1,6 @@
 package looker
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,16 +79,18 @@ func resourceGroupMembershipRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if !isContains(users, userID) {
-		return fmt.Errorf("failed to find target userID: %d", userID)
-	}
-
 	if err = d.Set("group_id", strconv.Itoa(int(groupID))); err != nil {
-		return nil
+		return err
 	}
 
-	if err = d.Set("user_id", strconv.Itoa(int(userID))); err != nil {
-		return nil
+	if !isContained(users, userID) {
+		if err = d.Set("user_id", ""); err != nil {
+			return err
+		}
+	} else {
+		if err = d.Set("user_id", strconv.Itoa(int(userID))); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -124,7 +125,7 @@ func resourceGroupMembershipImport(d *schema.ResourceData, m interface{}) ([]*sc
 	return []*schema.ResourceData{d}, nil
 }
 
-func isContains(users []apiclient.User, userID int64) bool {
+func isContained(users []apiclient.User, userID int64) bool {
 	for _, user := range users {
 		if user.Id == &userID {
 			return true
