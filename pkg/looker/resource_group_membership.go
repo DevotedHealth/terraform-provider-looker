@@ -83,12 +83,12 @@ func resourceGroupMembershipRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if !isContained(users, userID) {
-		if err = d.Set("user_id", ""); err != nil {
+	if isContained(users, userID) {
+		if err = d.Set("user_id", strconv.Itoa(int(userID))); err != nil {
 			return err
 		}
 	} else {
-		if err = d.Set("user_id", strconv.Itoa(int(userID))); err != nil {
+		if err = d.Set("user_id", ""); err != nil {
 			return err
 		}
 	}
