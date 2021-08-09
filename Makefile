@@ -1,4 +1,5 @@
 VERSION=$(shell cat VERSION)
+PROVIDER_NAME=chriskuchin/looker
 export BASE_BINARY_NAME=terraform-provider-looker_v$(VERSION)
 
 .PHONY: help
