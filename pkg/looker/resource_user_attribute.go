@@ -27,23 +27,28 @@ func resourceUserAttribute() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "Name of user attribute",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"type": {
+				Description:  "Type of user attribute (string, number, datetime, relative_url, advanced_filter_datetime, advanced_filter_number, advanced_filter_string)",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"string", "number", "datetime", "relative_url", "advanced_filter_datetime", "advanced_filter_number", "advanced_filter_string"}, true),
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "Human-friendly label for user attribute",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"default": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Description: "Default value for when no value is set on the user",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"user_access": {
+				Description:  "Field describing the access non admin users have to their attributes. `view` Non-admin users can see the values of their attributes and use them in filters. `edit` Users can change the value of this attribute for themselves. `none` non-admin users have no access to this user attribute",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{USER_ACCESS_EDIT, USER_ACCESS_VIEW, USER_ACCESS_NONE}, true),
