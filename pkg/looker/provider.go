@@ -1,6 +1,10 @@
 package looker
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/looker-open-source/sdk-codegen/go/rtl"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
@@ -13,21 +17,37 @@ const (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"client_id": {
+			"ini_file_path": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("LOOKER_INI_FILE_PATH", nil),
+				Description:  "Path to the looker.ini file with connection information.",
+				AtLeastOneOf: []string{"ini_file_path", "client_id", "client_secret"},
+			},
+			"ini_section": {
 				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LOOKER_API_CLIENT_ID", nil),
-				Description: "Client ID to authenticate with Looker",
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("LOOKER_INI_SECTION", nil),
+				Description: "Section of the ini to use with this connection. Default: Looker",
+			},
+			"client_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("LOOKER_API_CLIENT_ID", nil),
+				Description:  "Client ID to authenticate with Looker",
+				AtLeastOneOf: []string{"ini_file_path", "client_id", "client_secret"},
 			},
 			"client_secret": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("LOOKER_API_CLIENT_SECRET", nil),
-				Description: "Client Secret to authenticate with Looker",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				DefaultFunc:  schema.EnvDefaultFunc("LOOKER_API_CLIENT_SECRET", nil),
+				Description:  "Client Secret to authenticate with Looker",
+				AtLeastOneOf: []string{"ini_file_path", "client_id", "client_secret"},
 			},
 			"base_url": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LOOKER_API_BASE_URL", nil),
 				Description: "Looker API Base URL",
 			},
@@ -58,27 +78,62 @@ func Provider() *schema.Provider {
 			"looker_user_attribute": resourceUserAttribute(),
 		},
 
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	baseUrl := d.Get("base_url").(string)
-	clientID := d.Get("client_id").(string)
-	clientSecret := d.Get("client_secret").(string)
-	apiVersion := d.Get("api_version").(string)
-	timeout := d.Get("timeout").(int)
+func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	diagnostics := diag.Diagnostics{}
+	path := d.Get("ini_file_path").(string)
+	section := d.Get("ini_section").(string)
 
-	apiSettings := rtl.ApiSettings{
-		BaseUrl:      baseUrl,
-		ClientId:     clientID,
-		ClientSecret: clientSecret,
-		ApiVersion:   apiVersion,
-		VerifySsl:    d.Get("verify_ssl").(bool),
-		Timeout:      int32(timeout),
+	apiSettings, err := rtl.NewSettingsFromFile(path, &section)
+	if err != nil {
+		diagnostics = append(diagnostics, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "No Looker ini file found",
+			Detail:   fmt.Sprintf("%s not found", path),
+		})
 	}
+
+	baseUrl, baseUrlOk := d.GetOk("base_url")
+	clientID, clientIDOk := d.GetOk("client_id")
+	clientSecret, clientSecretOk := d.GetOk("client_secret")
+	apiVersion, apiVersionOk := d.GetOk("api_version")
+	timeout, timeoutOk := d.GetOk("timeout")
+
+	if baseUrlOk {
+		apiSettings.BaseUrl = baseUrl.(string)
+	}
+
+	if clientIDOk {
+		apiSettings.ClientId = clientID.(string)
+	}
+
+	if clientSecretOk {
+		apiSettings.ClientSecret = clientSecret.(string)
+	}
+
+	if apiVersionOk {
+		apiSettings.ApiVersion = apiVersion.(string)
+	}
+
+	if timeoutOk {
+		apiSettings.Timeout = timeout.(int32)
+	}
+
+	if apiSettings.ClientId == "" || apiSettings.ClientSecret == "" || apiSettings.BaseUrl == "" {
+		diagnostics = append(diagnostics, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "No credentials found",
+			Detail:   fmt.Sprintf("ClientID/ClientSecret/BaseURL were not found after parsing provider and %s", path),
+		})
+
+		return nil, diagnostics
+	}
+
 	authSession := rtl.NewAuthSession(apiSettings)
 	client := apiclient.NewLookerSDK(authSession)
 
-	return client, nil
+	return client, diagnostics
 }
