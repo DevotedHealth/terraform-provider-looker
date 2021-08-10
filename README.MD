@@ -12,7 +12,7 @@ You can use [Explicit Provider Source Locations](https://www.terraform.io/upgrad
 terraform {
   required_providers {
     looker = {
-      source = "DevotedHealth/looker"
+      source = "chriskuchin/looker"
       version = "0.1.0"
     }
   }
@@ -21,4 +21,4 @@ terraform {
 
 ## Usage
 
-In-depth docs are available [on the Terraform registry](https://registry.terraform.io/providers/DevotedHealth/looker/latest).
+In-depth docs are available [on the Terraform registry](https://registry.terraform.io/providers/chriskuchin/looker/latest).

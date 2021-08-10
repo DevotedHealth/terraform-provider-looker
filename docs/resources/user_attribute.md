@@ -25,12 +25,14 @@ resource "looker_user_attribute" "my_user_attribute" {
 
 ### Required
 
-- **label** (String)
-- **name** (String)
-- **type** (String)
+- **label** (String) Human-friendly label for user attribute
+- **name** (String) Name of user attribute
+- **type** (String) Type of user attribute (string, number, datetime, relative_url, advanced_filter_datetime, advanced_filter_number, advanced_filter_string)
 
 ### Optional
 
+- **default** (String) Default value for when no value is set on the user
 - **id** (String) The ID of this resource.
+- **user_access** (String) Field describing the access non admin users have to their attributes. `view` Non-admin users can see the values of their attributes and use them in filters. `edit` Users can change the value of this attribute for themselves. `none` non-admin users have no access to this user attribute
 
 

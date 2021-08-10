@@ -2,9 +2,17 @@ package looker
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+)
+
+const (
+	USER_ACCESS_EDIT = "edit"
+	USER_ACCESS_VIEW = "view"
+	USER_ACCESS_NONE = "none"
 )
 
 func resourceUserAttribute() *schema.Resource {
@@ -19,16 +27,31 @@ func resourceUserAttribute() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "Name of user attribute",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description:  "Type of user attribute (string, number, datetime, relative_url, advanced_filter_datetime, advanced_filter_number, advanced_filter_string)",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"string", "number", "datetime", "relative_url", "advanced_filter_datetime", "advanced_filter_number", "advanced_filter_string"}, true),
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "Human-friendly label for user attribute",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"default": {
+				Description: "Default value for when no value is set on the user",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"user_access": {
+				Description:  "Field describing the access non admin users have to their attributes. `view` Non-admin users can see the values of their attributes and use them in filters. `edit` Users can change the value of this attribute for themselves. `none` non-admin users have no access to this user attribute",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{USER_ACCESS_EDIT, USER_ACCESS_VIEW, USER_ACCESS_NONE}, true),
 			},
 		},
 	}
@@ -44,6 +67,26 @@ func resourceUserAttributeCreate(d *schema.ResourceData, m interface{}) error {
 		Name:  &userAttributeName,
 		Label: &userAttributeLabel,
 		Type:  &userAttributeType,
+	}
+
+	if userAttributeDefault, defaultSet := d.GetOk("default"); defaultSet {
+		stringDefaultValue := userAttributeDefault.(string)
+		writeUserAttribute.DefaultValue = &stringDefaultValue
+	}
+
+	if userAccessAttribute, userAccessOk := d.GetOk("user_access"); userAccessOk {
+		userCan := true
+		userCant := false
+		if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_VIEW) {
+			writeUserAttribute.UserCanEdit = nil
+			writeUserAttribute.UserCanView = &userCan
+		} else if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_EDIT) {
+			writeUserAttribute.UserCanEdit = &userCan
+			writeUserAttribute.UserCanView = nil
+		} else if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_NONE) {
+			writeUserAttribute.UserCanEdit = &userCant
+			writeUserAttribute.UserCanView = &userCant
+		}
 	}
 
 	userAttribute, err := client.CreateUserAttribute(writeUserAttribute, "", nil)
@@ -80,6 +123,28 @@ func resourceUserAttributeRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if _, ok := d.GetOk("default"); ok {
+		if err = d.Set("default", userAttribute.DefaultValue); err != nil {
+			return err
+		}
+	}
+
+	if _, ok := d.GetOk("user_access"); ok {
+		if *userAttribute.UserCanEdit {
+			if err = d.Set("user_access", USER_ACCESS_EDIT); err != nil {
+				return err
+			}
+		} else if *userAttribute.UserCanView {
+			if err = d.Set("user_access", USER_ACCESS_VIEW); err != nil {
+				return err
+			}
+		} else {
+			if err = d.Set("user_access", USER_ACCESS_NONE); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -93,12 +158,32 @@ func resourceUserAttributeUpdate(d *schema.ResourceData, m interface{}) error {
 
 	userAttributeName := d.Get("name").(string)
 	userAttributeType := d.Get("type").(string)
-	userAttributeLabel := d.Get("type").(string)
+	userAttributeLabel := d.Get("label").(string)
 
 	writeUserAttribute := apiclient.WriteUserAttribute{
 		Name:  &userAttributeName,
 		Label: &userAttributeLabel,
 		Type:  &userAttributeType,
+	}
+
+	if userAttributeDefault, defaultSet := d.GetOk("default"); defaultSet {
+		stringDefaultAttribute := userAttributeDefault.(string)
+		writeUserAttribute.DefaultValue = &stringDefaultAttribute
+	}
+
+	if userAccessAttribute, userAccessOk := d.GetOk("user_access"); userAccessOk {
+		userCan := true
+		userCant := false
+		if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_VIEW) {
+			writeUserAttribute.UserCanEdit = &userCant
+			writeUserAttribute.UserCanView = &userCan
+		} else if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_EDIT) {
+			writeUserAttribute.UserCanEdit = &userCan
+			writeUserAttribute.UserCanView = &userCan
+		} else if strings.EqualFold(userAccessAttribute.(string), USER_ACCESS_NONE) {
+			writeUserAttribute.UserCanEdit = &userCant
+			writeUserAttribute.UserCanView = &userCant
+		}
 	}
 
 	_, err = client.UpdateUserAttribute(userAttributeID, writeUserAttribute, "", nil)
