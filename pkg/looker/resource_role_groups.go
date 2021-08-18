@@ -4,7 +4,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+	"github.com/looker-open-source/sdk-codegen/go/rtl"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v3"
 )
 
 func resourceRoleGroups() *schema.Resource {
@@ -32,7 +33,7 @@ func resourceRoleGroups() *schema.Resource {
 }
 
 func resourceRoleGroupsCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	roleIDString := d.Get("role_id").(string)
 
@@ -61,7 +62,7 @@ func resourceRoleGroupsCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceRoleGroupsRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	roleID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -91,7 +92,7 @@ func resourceRoleGroupsRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceRoleGroupsUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	roleID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -116,7 +117,7 @@ func resourceRoleGroupsUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceRoleGroupsDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	roleID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

@@ -6,7 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+	"github.com/looker-open-source/sdk-codegen/go/rtl"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v3"
 )
 
 const (
@@ -58,7 +59,7 @@ func resourceUserAttribute() *schema.Resource {
 }
 
 func resourceUserAttributeCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 	userAttributeName := d.Get("name").(string)
 	userAttributeLabel := d.Get("label").(string)
 	userAttributeType := d.Get("type").(string)
@@ -101,7 +102,7 @@ func resourceUserAttributeCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceUserAttributeRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	userAttributeID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -149,7 +150,7 @@ func resourceUserAttributeRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceUserAttributeUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	userAttributeID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -195,7 +196,7 @@ func resourceUserAttributeUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceUserAttributeDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	userAttributeID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

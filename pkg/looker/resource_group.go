@@ -4,7 +4,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+	"github.com/looker-open-source/sdk-codegen/go/rtl"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v3"
 )
 
 func resourceGroup() *schema.Resource {
@@ -27,7 +28,7 @@ func resourceGroup() *schema.Resource {
 }
 
 func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 	groupName := d.Get("name").(string)
 
 	writeGroup := apiclient.WriteGroup{
@@ -46,7 +47,7 @@ func resourceGroupCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	groupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -66,7 +67,7 @@ func resourceGroupRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	groupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -86,7 +87,7 @@ func resourceGroupUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceGroupDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	groupID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

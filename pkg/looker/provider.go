@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/looker-open-source/sdk-codegen/go/rtl"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 const (
@@ -68,16 +67,20 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"looker_user":           resourceUser(),
-			"looker_user_roles":     resourceUserRoles(),
-			"looker_permission_set": resourcePermissionSet(),
-			"looker_model_set":      resourceModelSet(),
-			"looker_group":          resourceGroup(),
-			"looker_role":           resourceRole(),
-			"looker_role_groups":    resourceRoleGroups(),
-			"looker_user_attribute": resourceUserAttribute(),
+			"looker_user":                   resourceUser(),
+			"looker_user_roles":             resourceUserRoles(),
+			"looker_permission_set":         resourcePermissionSet(),
+			"looker_model_set":              resourceModelSet(),
+			"looker_group":                  resourceGroup(),
+			"looker_role":                   resourceRole(),
+			"looker_role_groups":            resourceRoleGroups(),
+			"looker_user_attribute":         resourceUserAttribute(),
+			"looker_project":                resourceProject(),
+			"looker_project_git_deploy_key": resourceProjectGitDeployKey(),
+			"looker_project_git_repo":       resourceProjectGitRepo(),
+			"looker_connection":             resourceConnection(),
+			"looker_lookml_model":           resourceLookMLModel(),
 		},
-
 		ConfigureContextFunc: providerConfigure,
 	}
 }
@@ -133,7 +136,7 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 	}
 
 	authSession := rtl.NewAuthSession(apiSettings)
-	client := apiclient.NewLookerSDK(authSession)
+	// client := apiclient.NewLookerSDK(authSession)
 
-	return client, diagnostics
+	return authSession, diagnostics
 }

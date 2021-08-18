@@ -4,7 +4,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+	"github.com/looker-open-source/sdk-codegen/go/rtl"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v3"
 )
 
 func resourcePermissionSet() *schema.Resource {
@@ -32,7 +33,7 @@ func resourcePermissionSet() *schema.Resource {
 }
 
 func resourcePermissionSetCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	permissionSetName := d.Get("name").(string)
 
@@ -58,7 +59,7 @@ func resourcePermissionSetCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourcePermissionSetRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	permissionSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -80,7 +81,7 @@ func resourcePermissionSetRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourcePermissionSetUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	permissionSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -105,7 +106,7 @@ func resourcePermissionSetUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourcePermissionSetDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	permissionSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {

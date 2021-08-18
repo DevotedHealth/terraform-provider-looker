@@ -4,7 +4,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
+	"github.com/looker-open-source/sdk-codegen/go/rtl"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v3"
 )
 
 func resourceModelSet() *schema.Resource {
@@ -32,7 +33,7 @@ func resourceModelSet() *schema.Resource {
 }
 
 func resourceModelSetCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	modelSetName := d.Get("name").(string)
 
@@ -58,7 +59,7 @@ func resourceModelSetCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceModelSetRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	modelSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -81,7 +82,7 @@ func resourceModelSetRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceModelSetUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	modelSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -105,7 +106,7 @@ func resourceModelSetUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceModelSetDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*apiclient.LookerSDK)
+	client := apiclient.NewLookerSDK(m.(*rtl.AuthSession))
 
 	modelSetID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
