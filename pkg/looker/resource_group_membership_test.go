@@ -33,7 +33,7 @@ func TestAcc_GroupMembership(t *testing.T) {
 					resource.TestCheckResourceAttr("looker_group_membership.test", "user_ids.#", "2"),
 				),
 			},
-			// Test: Create
+			// Test: Update
 			{
 				Config: groupMembershipConfigUpdate(user3),
 				Check: resource.ComposeTestCheckFunc(
@@ -102,6 +102,9 @@ func testAccCheckGroupMembershipDestroy(s *terraform.State) error {
 
 		users, err := client.AllGroupUsers(apiclient.RequestAllGroupUsers{GroupId: targetGroupID}, nil)
 		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				return nil // successfully destroyed
+			}
 			return err
 		}
 

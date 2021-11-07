@@ -2,11 +2,14 @@ package looker
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func TestAcc_User(t *testing.T) {
@@ -14,7 +17,7 @@ func TestAcc_User(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: providers(),
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: userConfig(name, name, name),
@@ -30,7 +33,38 @@ func TestAcc_User(t *testing.T) {
 				ImportStateVerify: true,
 			},
 		},
+		CheckDestroy: testAccCheckUserDestroy,
 	})
+}
+
+func testAccCheckUserDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*apiclient.LookerSDK)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "looker_user" {
+			continue
+		}
+
+		userID, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		user, err := client.User(userID, "", nil)
+		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				return nil // successfully destroyed
+			}
+			return err
+		}
+
+		if *user.Email == rs.Primary.Attributes["email"] {
+			return fmt.Errorf("user '%s' still exists", rs.Primary.ID)
+		}
+
+	}
+
+	return nil
 }
 
 func userConfig(firstName, lastName, email string) string {

@@ -262,7 +262,7 @@ func resourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	connection, err := client.Connection(connectionName, "", nil)
 	if err != nil {
-		if strings.Contains(err.Error(), "Not found") {
+		if strings.Contains(err.Error(), "404") {
 			d.SetId("")
 			return nil
 		}
