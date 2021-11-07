@@ -24,9 +24,9 @@ func parseTwoPartID(id string) (string, string, error) {
 	return parts[0], parts[1], nil
 }
 
-func expandStringListFromSet(set *schema.Set) []string {
-	strings := make([]string, 0, set.Len())
-	for _, v := range set.List() {
+func expandStringListFromSet(set interface{}) []string {
+	var strings []string
+	for _, v := range set.(*schema.Set).List() {
 		strings = append(strings, v.(string))
 	}
 	return strings
@@ -42,4 +42,12 @@ func flattenStringList(strings []string) []interface{} {
 
 func flattenStringListToSet(strings []string) *schema.Set {
 	return schema.NewSet(schema.HashString, flattenStringList(strings))
+}
+
+func expandInt64ListFromSet(set interface{}) []int64 {
+	var ints []int64
+	for _, v := range set.(*schema.Set).List() {
+		ints = append(ints, v.(int64))
+	}
+	return ints
 }
