@@ -68,7 +68,6 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 		}
 		return nil
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
