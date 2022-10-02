@@ -55,10 +55,10 @@ resource "looker_connection" "snowflake_connection" {
 ### Optional
 
 - `after_connect_statements` (String)
-- `certificate` (String, Sensitive)
+- `certificate` (String, Sensitive) Base64 encoded certificate body for server authentication (when appropriate for the dialect). Due to limitations in the Looker API, changes made outside of Terraform cannot be detected.
 - `db_timezone` (String)
 - `disable_context_comment` (Boolean)
-- `file_type` (String)
+- `file_type` (String) Certificate key file type (.json or .p12).
 - `id` (String) The ID of this resource.
 - `jdbc_additional_params` (String)
 - `maintenance_cron` (String)
