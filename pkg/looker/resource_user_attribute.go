@@ -85,7 +85,7 @@ func resourceUserAttributeUpdate(d *schema.ResourceData, m interface{}) error {
 
 	userAttributeName := d.Get("name").(string)
 	userAttributeType := d.Get("type").(string)
-	userAttributeLabel := d.Get("type").(string)
+	userAttributeLabel := d.Get("label").(string)
 
 	writeUserAttribute := apiclient.WriteUserAttribute{
 		Name:  userAttributeName,
