@@ -1,18 +1,21 @@
 package looker
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func resourceUserRoles() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceUserRolesCreate,
-		Read:   resourceUserRolesRead,
-		Update: resourceUserRolesUpdate,
-		Delete: resourceUserRolesDelete,
+		CreateContext: resourceUserRolesCreate,
+		ReadContext:   resourceUserRolesRead,
+		UpdateContext: resourceUserRolesUpdate,
+		DeleteContext: resourceUserRolesDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceUserRolesImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -29,27 +32,28 @@ func resourceUserRoles() *schema.Resource {
 	}
 }
 
-func resourceUserRolesCreate(d *schema.ResourceData, m interface{}) error {
+func resourceUserRolesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Get("user_id").(string)
 
 	var roleIDs []string
 	for _, roleID := range d.Get("role_ids").(*schema.Set).List() {
-		roleIDs = append(roleIDs, roleID.(string))
+		rID := roleID.(string)
+		roleIDs = append(roleIDs, rID)
 	}
 
 	_, err := client.SetUserRoles(userID, roleIDs, "", nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(userID)
 
-	return resourceUserRolesRead(d, m)
+	return resourceUserRolesRead(ctx, d, m)
 }
 
-func resourceUserRolesRead(d *schema.ResourceData, m interface{}) error {
+func resourceUserRolesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
@@ -58,44 +62,46 @@ func resourceUserRolesRead(d *schema.ResourceData, m interface{}) error {
 
 	userRoles, err := client.UserRoles(request, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var roleIDs []string
 	for _, role := range userRoles {
-		roleIDs = append(roleIDs, *role.Id)
+		rID := *role.Id
+		roleIDs = append(roleIDs, rID)
 	}
 
 	if err = d.Set("user_id", d.Id()); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err = d.Set("role_ids", roleIDs); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceUserRolesUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceUserRolesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
 
 	var roleIDs []string
 	for _, roleID := range d.Get("role_ids").(*schema.Set).List() {
-		roleIDs = append(roleIDs, roleID.(string))
+		rID := roleID.(string)
+		roleIDs = append(roleIDs, rID)
 	}
 
 	_, err := client.SetUserRoles(userID, roleIDs, "", nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceUserRolesRead(d, m)
+	return resourceUserRolesRead(ctx, d, m)
 }
 
-func resourceUserRolesDelete(d *schema.ResourceData, m interface{}) error {
+func resourceUserRolesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
@@ -103,15 +109,8 @@ func resourceUserRolesDelete(d *schema.ResourceData, m interface{}) error {
 	roleIDs := []string{}
 	_, err := client.SetUserRoles(userID, roleIDs, "", nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
-}
-
-func resourceUserRolesImport(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceUserRolesRead(d, m); err != nil {
-		return nil, err
-	}
-	return []*schema.ResourceData{d}, nil
 }

@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func TestAcc_PermissionSet(t *testing.T) {
@@ -15,7 +17,7 @@ func TestAcc_PermissionSet(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: providers(),
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: permissionSetConfig(name1),
@@ -37,7 +39,35 @@ func TestAcc_PermissionSet(t *testing.T) {
 				ImportStateVerify: true,
 			},
 		},
+		CheckDestroy: testAccCheckPermissionSetDestroy,
 	})
+}
+
+func testAccCheckPermissionSetDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*apiclient.LookerSDK)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "looker_permission_set" {
+			continue
+		}
+
+		permissionSetID := rs.Primary.ID
+
+		permissionSet, err := client.PermissionSet(permissionSetID, "", nil)
+		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				return nil // successfully destroyed
+			}
+			return err
+		}
+
+		if *permissionSet.Name == rs.Primary.Attributes["name"] {
+			return fmt.Errorf("permission_set '%s' still exists", rs.Primary.ID)
+		}
+
+	}
+
+	return nil
 }
 
 func permissionSetConfig(name string) string {

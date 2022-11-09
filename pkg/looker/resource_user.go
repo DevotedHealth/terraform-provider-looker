@@ -1,18 +1,24 @@
 package looker
 
 import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceUserCreate,
-		Read:   resourceUserRead,
-		Update: resourceUserUpdate,
-		Delete: resourceUserDelete,
+		CreateContext: resourceUserCreate,
+		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
+		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceUserImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {
@@ -27,24 +33,43 @@ func resourceUser() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"is_disabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
 
-func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
 	email := d.Get("email").(string)
+	isDisabled := d.Get("is_disabled").(bool)
 
 	writeUser := apiclient.WriteUser{
-		FirstName: &firstName,
-		LastName:  &lastName,
+		FirstName:  &firstName,
+		LastName:   &lastName,
+		IsDisabled: &isDisabled,
 	}
 
-	user, err := client.CreateUser(writeUser, "", nil)
+	// CreateUser sometimes returns 500 error
+	var user apiclient.User
+	err := resource.RetryContext(ctx, 1*time.Minute, func() *resource.RetryError {
+		var err error
+
+		user, err = client.CreateUser(writeUser, "", nil)
+		if err != nil {
+			if d.IsNewResource() && strings.Contains(err.Error(), "500") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	userID := *user.Id
@@ -53,55 +78,61 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 	writeCredentialsEmail := apiclient.WriteCredentialsEmail{
 		Email: &email,
 	}
+
 	_, err = client.CreateUserCredentialsEmail(userID, writeCredentialsEmail, "", nil)
 	if err != nil {
 		if _, err = client.DeleteUser(userID, nil); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceUserRead(d, m)
+	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserRead(d *schema.ResourceData, m interface{}) error {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
 
 	user, err := client.User(userID, "", nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err = d.Set("email", user.Email); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("first_name", user.FirstName); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err = d.Set("last_name", user.LastName); err != nil {
-		return err
+		return diag.FromErr(err)
+	}
+	if err = d.Set("is_disabled", user.IsDisabled); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
 
-	if d.HasChanges("first_name", "last_name") {
+	if d.HasChanges("first_name", "last_name", "is_disabled") {
 		firstName := d.Get("first_name").(string)
 		lastName := d.Get("last_name").(string)
+		isDisabled := d.Get("is_disabled").(bool)
 		writeUser := apiclient.WriteUser{
-			FirstName: &firstName,
-			LastName:  &lastName,
+			FirstName:  &firstName,
+			LastName:   &lastName,
+			IsDisabled: &isDisabled,
 		}
 		_, err := client.UpdateUser(userID, writeUser, "", nil)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -112,29 +143,22 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		_, err := client.UpdateUserCredentialsEmail(userID, writeCredentialsEmail, "", nil)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceUserRead(d, m)
+	return resourceUserRead(ctx, d, m)
 }
 
-func resourceUserDelete(d *schema.ResourceData, m interface{}) error {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	userID := d.Id()
 
 	_, err := client.DeleteUser(userID, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
-}
-
-func resourceUserImport(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceUserRead(d, m); err != nil {
-		return nil, err
-	}
-	return []*schema.ResourceData{d}, nil
 }

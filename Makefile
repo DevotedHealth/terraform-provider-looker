@@ -7,8 +7,8 @@ help:
 
 .PHONY: vendor
 vendor: go.sum ## vendor dependencies
-	@GO111MODULE=on go mod vendor
-	@GO111MODULE=on go mod tidy
+	@go mod vendor
+	@go mod tidy
 
 .PHONY: lint
 lint: ## run linter
@@ -38,3 +38,7 @@ check-docs: docs ## check that docs have been generated
 check-mod: ## check go.mod is up-to-date
 	@go mod tidy
 	@git diff --exit-code -- go.mod go.sum
+
+.PHONY: install
+install:
+	@go build -o ~/.terraform.d/plugins/registry.terraform.io/hirosassa/looker/${VERSION}/darwin_amd64/terraform-provider-looker

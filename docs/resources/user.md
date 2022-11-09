@@ -30,10 +30,6 @@ resource "looker_user" "user" {
 ### Optional
 
 - `first_name` (String)
-- `last_name` (String)
-
-### Read-Only
-
 - `id` (String) The ID of this resource.
-
-
+- `is_disabled` (Boolean)
+- `last_name` (String)
