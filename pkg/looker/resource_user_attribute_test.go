@@ -141,7 +141,7 @@ func userAttributeConfig(name string) string {
 	resource "looker_user_attribute" "test" {
         name  = "%s"
         type  = "string"
-        label = "testing"
+        label = "testing_attr"
 	}
 	`, name)
 }
@@ -151,7 +151,7 @@ func userAttributeConfigWithDefaultValue(name, dataType, defaultValue string) st
 	resource "looker_user_attribute" "test_with_default" {
         name  = "%s"
         type  = "%s"
-        label = "testing"
+        label = "testing_w_default"
         default_value = "%s"
 	}
 	`, name, dataType, defaultValue)
