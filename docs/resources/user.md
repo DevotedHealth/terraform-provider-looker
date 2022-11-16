@@ -33,3 +33,5 @@ resource "looker_user" "user" {
 - `id` (String) The ID of this resource.
 - `is_disabled` (Boolean)
 - `last_name` (String)
+
+

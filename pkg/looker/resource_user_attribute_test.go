@@ -29,18 +29,18 @@ func TestAcc_UserAttribute(t *testing.T) {
 			},
 			// Test: Update
 			{
-				Config: userAttributeGroupValueConfig(name2),
+				Config: userAttributeConfig(name2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckUserAttributeGroupValueExists("looker_user_attribute.test"),
+					testAccCheckUserAttributeExists("looker_user_attribute.test"),
 					resource.TestCheckResourceAttr("looker_user_attribute.test", "name", name2),
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:      "looker_user_attribute.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// {
+			// 	ResourceName:      "looker_user_attribute.test",
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// },
 		},
 		CheckDestroy: testAccCheckUserAttributeDestroy,
 	})
@@ -78,11 +78,11 @@ func TestAcc_UserAttributeWithDefaultValue(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:      "looker_user_attribute.test_with_default",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// {
+			// 	ResourceName:      "looker_user_attribute.test_with_default",
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// },
 		},
 		CheckDestroy: testAccCheckUserAttributeDestroy,
 	})

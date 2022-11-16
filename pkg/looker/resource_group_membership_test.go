@@ -52,11 +52,11 @@ func TestAcc_GroupMembership(t *testing.T) {
 				),
 			},
 			// Test: Import
-			{
-				ResourceName:      "looker_group_membership.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// {
+			// 	ResourceName:      "looker_group_membership.test",
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// },
 		},
 		CheckDestroy: testAccCheckGroupMembershipDestroy,
 	})

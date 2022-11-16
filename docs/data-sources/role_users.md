@@ -25,9 +25,12 @@ data "looker_role_users" "looker_role_users" {
 
 - `role_id` (String)
 
-### Read-Only
+### Optional
 
 - `id` (String) The ID of this resource.
+
+### Read-Only
+
 - `users` (List of String)
 
 

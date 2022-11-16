@@ -109,12 +109,12 @@ func testAccCheckUserAttributeGroupValueDestroy(s *terraform.State) error {
 func userAttributeGroupValueConfig(groupValue string) string {
 	return fmt.Sprintf(`
 	resource "looker_group" "test" {
-        name = "testing"
+        name = "testing_user_attr_group"
 	}
 	resource "looker_user_attribute" "test" {
         name  = "testing"
         type  = "string"
-        label = "testing"
+        label = "testing_user_attr_groups"
 	}
 	resource "looker_user_attribute_group_value" "test" {
 		group_id          = looker_group.test.id

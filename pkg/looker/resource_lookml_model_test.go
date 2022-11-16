@@ -48,7 +48,6 @@ func lookMLModelConfig(name, connectionName, projectName string) string {
 	}
 	resource "looker_lookml_model" "test" {
 		name = "%s"
-		allowed_db_connection_names = [looker_connection.test.name]
 		project_name = "%s"
 	}
 	`, connectionName, name, projectName)

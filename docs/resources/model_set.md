@@ -27,7 +27,7 @@ resource "looker_model_set" "model_set" {
 - `models` (Set of String)
 - `name` (String)
 
-### Read-Only
+### Optional
 
 - `id` (String) The ID of this resource.
 

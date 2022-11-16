@@ -25,7 +25,7 @@ func resourceLookMLModel() *schema.Resource {
 			},
 			"allowed_db_connection_names": {
 				Type:     schema.TypeSet,
-				Required: true,
+				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"project_name": {

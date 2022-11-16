@@ -27,7 +27,7 @@ resource "looker_user_roles" "user_roles" {
 - `role_ids` (Set of String)
 - `user_id` (String)
 
-### Read-Only
+### Optional
 
 - `id` (String) The ID of this resource.
 
