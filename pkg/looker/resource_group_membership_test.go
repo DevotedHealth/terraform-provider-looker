@@ -51,12 +51,6 @@ func TestAcc_GroupMembership(t *testing.T) {
 					resource.TestCheckResourceAttr("looker_group_membership.test", "user_ids.#", "3"),
 				),
 			},
-			// Test: Import
-			// {
-			// 	ResourceName:      "looker_group_membership.test",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
 		},
 		CheckDestroy: testAccCheckGroupMembershipDestroy,
 	})

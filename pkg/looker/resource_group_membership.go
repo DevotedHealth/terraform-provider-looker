@@ -14,9 +14,6 @@ func resourceGroupMembership() *schema.Resource {
 		ReadContext:   resourceGroupMembershipRead,
 		UpdateContext: resourceGroupMembershipUpdate,
 		DeleteContext: resourceGroupMembershipDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
 
 		Schema: map[string]*schema.Schema{
 			"target_group_id": {
