@@ -36,11 +36,11 @@ func TestAcc_UserAttribute(t *testing.T) {
 				),
 			},
 			// Test: Import
-			// {
-			// 	ResourceName:      "looker_user_attribute.test",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			{
+				ResourceName:      "looker_user_attribute.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 		CheckDestroy: testAccCheckUserAttributeDestroy,
 	})
@@ -78,11 +78,11 @@ func TestAcc_UserAttributeWithDefaultValue(t *testing.T) {
 				),
 			},
 			// Test: Import
-			// {
-			// 	ResourceName:      "looker_user_attribute.test_with_default",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			{
+				ResourceName:      "looker_user_attribute.test_with_default",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 		CheckDestroy: testAccCheckUserAttributeDestroy,
 	})
