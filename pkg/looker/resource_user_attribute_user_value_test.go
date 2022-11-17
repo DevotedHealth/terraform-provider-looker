@@ -25,26 +25,27 @@ func TestAcc_UserAttributeUserValue(t *testing.T) {
 			{
 				Config: userAttributeUserValueConfig(user, attributeValue1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckUserAttributeUserValueExists("looker_user_attribute_user_value.test"),
-					resource.TestCheckResourceAttr("looker_user_attribute_user_value.test", "value", attributeValue1),
+					testAccCheckUserAttributeUserValueExists("looker_user_attribute_user_value.test_user_attr"),
+					resource.TestCheckResourceAttr("looker_user_attribute_user_value.test_user_attr", "value", attributeValue1),
 				),
 			},
 			// Test: Update
 			{
 				Config: userAttributeUserValueConfig(user, attributeValue2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckUserAttributeUserValueExists("looker_user_attribute_user_value.test"),
-					resource.TestCheckResourceAttr("looker_user_attribute_user_value.test", "value", attributeValue2),
+					testAccCheckUserAttributeUserValueExists("looker_user_attribute_user_value.test_user_attr"),
+					resource.TestCheckResourceAttr("looker_user_attribute_user_value.test_user_attr", "value", attributeValue2),
 				),
 			},
 			// Test: Import
-			// {
-			// 	ResourceName:      "looker_user_attribute_user_value.test",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			{
+				ResourceName:            "looker_user_attribute_user_value.test_user_attr",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"user_attribute_id", "user_id", "value"},
+			},
 		},
-		// CheckDestroy: testAccCheckUserAttributeUserValueDestroy,
+		CheckDestroy: testAccCheckUserAttributeUserValueDestroy,
 	})
 }
 
@@ -87,7 +88,7 @@ func testAccCheckUserAttributeUserValueDestroy(s *terraform.State) error {
 			continue
 		}
 
-		userID, userAttributeID, err := parseTwoPartID(rs.Primary.ID)
+		userAttributeID, userID, err := parseTwoPartID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -100,8 +101,9 @@ func testAccCheckUserAttributeUserValueDestroy(s *terraform.State) error {
 
 		userAttributeUserValues, err := client.UserAttributeUserValues(request, nil)
 		if err != nil {
-			fmt.Printf("ERRRORRRRRRR %v || %s | %s\n", err.Error(), userID, userAttributeID)
-			return err
+			if strings.Contains(err.Error(), "404") {
+				return nil // successfully destroyed
+			}
 		}
 
 		if len(userAttributeUserValues) != 1 {
@@ -118,19 +120,19 @@ func testAccCheckUserAttributeUserValueDestroy(s *terraform.State) error {
 
 func userAttributeUserValueConfig(user, attributeValue string) string {
 	return fmt.Sprintf(`
-	resource "looker_user" "test" {
+	resource "looker_user" "test_user_attr" {
         first_name = "%s"
         last_name  = "%s"
-        email      = "%s@example.com"
+        email      = "%s@jason.com"
 	}
-	resource "looker_user_attribute" "test" {
-        name  = "test"
+	resource "looker_user_attribute" "test_user_attr" {
+        name  = "test_x"
         type  = "string"
-        label = "test label"
+        label = "test label x"
 	}
-	resource "looker_user_attribute_user_value" "test" {
-		user_id           = looker_user.test.id
-		user_attribute_id = looker_user_attribute.test.id
+	resource "looker_user_attribute_user_value" "test_user_attr" {
+		user_id           = looker_user.test_user_attr.id
+		user_attribute_id = looker_user_attribute.test_user_attr.id
         value             = "%s"
 	}
 	`, user, user, user, attributeValue)
