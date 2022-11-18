@@ -50,7 +50,7 @@ func TestAcc_UserAttributeWithDefaultValue(t *testing.T) {
 	name := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	type1 := "advanced_filter_string"
 	type2 := "advanced_filter_number"
-	defaultValue1 := "%, NULL"
+	defaultValue1 := "FOO, NULL"
 	defaultValue2 := "<0, >=0, NULL"
 
 	resource.ParallelTest(t, resource.TestCase{
