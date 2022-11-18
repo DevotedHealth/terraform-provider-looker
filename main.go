@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/DevotedHealth/terraform-provider-looker/pkg/looker"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/hirosassa/terraform-provider-looker/pkg/looker"
 )
 
 func main() {
