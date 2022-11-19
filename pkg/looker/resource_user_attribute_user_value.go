@@ -3,6 +3,7 @@ package looker
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -129,6 +130,10 @@ func resourceUserAttributeUserValueDelete(ctx context.Context, d *schema.Resourc
 
 	err = client.DeleteUserAttributeUserValue(userID, userAttributeID, nil)
 	if err != nil {
+		if strings.Contains(err.Error(), "EOF") {
+			return nil
+		}
+
 		log.Printf("[DEBUG] %+v", err)
 		return diag.FromErr(err)
 	}

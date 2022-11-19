@@ -3,6 +3,7 @@ package looker
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,7 +61,6 @@ func resourceUserAttributeGroupValueCreate(ctx context.Context, d *schema.Resour
 	id := buildTwoPartID(&groupIDString, &userAttributeIDString)
 
 	d.SetId(id)
-
 	return resourceUserAttributeGroupValueRead(ctx, d, m)
 }
 
@@ -133,11 +133,13 @@ func resourceUserAttributeGroupValueDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] Delete user attribute group value %s for %s", userAttributeID, groupID)
-
 	err = client.DeleteUserAttributeGroupValue(groupID, userAttributeID, nil)
 	if err != nil {
 		log.Printf("[DEBUG] %+v", err)
+		if strings.Contains(err.Error(), "EOF") {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 

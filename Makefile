@@ -22,6 +22,9 @@ test: ## run tests
 test-acceptance: ## runs all tests, including the acceptance tests
 	@TF_ACC=1 $(go_test) go test  -v -cover $(shell go list ./... | grep -v vendor)
 
+test-acceptance-one: ## runs all tests, including the acceptance tests
+	@TF_ACC=1 $(go_test) go test  -v -cover $(shell go list ./... | grep -v vendor) -run $(TEST_NAME)
+
 .PHONY: build
 build: ## build binary
 	@go build -o build/$(BASE_BINARY_NAME) .

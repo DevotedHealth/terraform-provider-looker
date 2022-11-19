@@ -2,6 +2,7 @@ package looker
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -184,6 +185,10 @@ func removeAllUsersFromGroup(m interface{}, groupID string) error {
 	for _, user := range users {
 		err = client.DeleteGroupUser(groupID, *user.Id, nil)
 		if err != nil {
+			if strings.Contains(err.Error(), "EOF") {
+				return nil
+			}
+
 			return err
 		}
 	}
@@ -201,6 +206,9 @@ func removeAllGroupsFromGroup(m interface{}, groupID string) error {
 	for _, group := range groups {
 		err = client.DeleteGroupFromGroup(groupID, *group.Id, nil)
 		if err != nil {
+			if strings.Contains(err.Error(), "EOF") {
+				return nil
+			}
 			return err
 		}
 	}

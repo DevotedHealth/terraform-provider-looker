@@ -23,21 +23,21 @@ func TestAcc_UserAttributeGroupValue(t *testing.T) {
 			{
 				Config: userAttributeGroupValueConfig(groupValue1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckUserAttributeGroupValueExists("looker_user_attribute_group_value.test_user_attr_group"),
-					resource.TestCheckResourceAttr("looker_user_attribute_group_value.test_user_attr_group", "value", groupValue1),
+					testAccCheckUserAttributeGroupValueExists("looker_user_attribute_group_value.test_user_attr_group_value"),
+					resource.TestCheckResourceAttr("looker_user_attribute_group_value.test_user_attr_group_value", "value", groupValue1),
 				),
 			},
 			// Test: Update
 			{
 				Config: userAttributeGroupValueConfig(groupValue2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckUserAttributeGroupValueExists("looker_user_attribute_group_value.test_user_attr_group"),
-					resource.TestCheckResourceAttr("looker_user_attribute_group_value.test_user_attr_group", "value", groupValue2),
+					testAccCheckUserAttributeGroupValueExists("looker_user_attribute_group_value.test_user_attr_group_value"),
+					resource.TestCheckResourceAttr("looker_user_attribute_group_value.test_user_attr_group_value", "value", groupValue2),
 				),
 			},
 			// Test: Import
 			{
-				ResourceName:      "looker_user_attribute_group_value.test_user_attr_group",
+				ResourceName:      "looker_user_attribute_group_value.test_user_attr_group_value",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -116,7 +116,7 @@ func userAttributeGroupValueConfig(groupValue string) string {
         type  = "string"
         label = "testing_user_attr_groups"
 	}
-	resource "looker_user_attribute_group_value" "test_user_attr_group" {
+	resource "looker_user_attribute_group_value" "test_user_attr_group_value" {
 		group_id          = looker_group.test_user_attr_group.id
 		user_attribute_id = looker_user_attribute.test_user_attr_group.id
         value             = "%s"
