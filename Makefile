@@ -7,8 +7,8 @@ help:
 
 .PHONY: vendor
 vendor: go.sum ## vendor dependencies
-	@GO111MODULE=on go mod vendor
-	@GO111MODULE=on go mod tidy
+	@go mod vendor
+	@go mod tidy
 
 .PHONY: lint
 lint: ## run linter
@@ -21,6 +21,9 @@ test: ## run tests
 .PHONY: test-acceptance
 test-acceptance: ## runs all tests, including the acceptance tests
 	@TF_ACC=1 $(go_test) go test  -v -cover $(shell go list ./... | grep -v vendor)
+
+test-acceptance-one: ## runs all tests, including the acceptance tests
+	@TF_ACC=1 $(go_test) go test  -v -cover $(shell go list ./... | grep -v vendor) -run $(TEST_NAME)
 
 .PHONY: build
 build: ## build binary

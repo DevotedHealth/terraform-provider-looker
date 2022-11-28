@@ -1,18 +1,21 @@
 package looker
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func resourceRoleGroups() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceRoleGroupsCreate,
-		Read:   resourceRoleGroupsRead,
-		Update: resourceRoleGroupsUpdate,
-		Delete: resourceRoleGroupsDelete,
+		CreateContext: resourceRoleGroupsCreate,
+		ReadContext:   resourceRoleGroupsRead,
+		UpdateContext: resourceRoleGroupsUpdate,
+		DeleteContext: resourceRoleGroupsDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceRoleGroupsImport,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -29,71 +32,74 @@ func resourceRoleGroups() *schema.Resource {
 	}
 }
 
-func resourceRoleGroupsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceRoleGroupsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	roleID := d.Get("role_id").(string)
 
 	var groupIDs []string
 	for _, groupID := range d.Get("group_ids").(*schema.Set).List() {
-		groupIDs = append(groupIDs, groupID.(string))
+		gID := groupID.(string)
+		groupIDs = append(groupIDs, gID)
 	}
 
 	_, err := client.SetRoleGroups(roleID, groupIDs, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(roleID)
 
-	return resourceRoleGroupsRead(d, m)
+	return resourceRoleGroupsRead(ctx, d, m)
 }
 
-func resourceRoleGroupsRead(d *schema.ResourceData, m interface{}) error {
+func resourceRoleGroupsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	roleID := d.Id()
 
 	groups, err := client.RoleGroups(roleID, "", nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var groupIDs []string
 	for _, group := range groups {
-		groupIDs = append(groupIDs, *group.Id)
+		gID := *group.Id
+		groupIDs = append(groupIDs, gID)
 	}
 
 	if err = d.Set("role_id", roleID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err = d.Set("group_ids", groupIDs); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
 }
 
-func resourceRoleGroupsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceRoleGroupsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	roleID := d.Id()
 
 	var groupIDs []string
 	for _, groupID := range d.Get("group_ids").(*schema.Set).List() {
-		groupIDs = append(groupIDs, groupID.(string))
+		gID := groupID.(string)
+		groupIDs = append(groupIDs, gID)
 	}
 
 	_, err := client.SetRoleGroups(roleID, groupIDs, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceRoleGroupsRead(d, m)
+	return resourceRoleGroupsRead(ctx, d, m)
 }
 
-func resourceRoleGroupsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceRoleGroupsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*apiclient.LookerSDK)
 
 	roleID := d.Id()
@@ -101,15 +107,8 @@ func resourceRoleGroupsDelete(d *schema.ResourceData, m interface{}) error {
 	groupIDs := []string{}
 	_, err := client.SetRoleGroups(roleID, groupIDs, nil)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
-}
-
-func resourceRoleGroupsImport(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	if err := resourceRoleGroupsRead(d, m); err != nil {
-		return nil, err
-	}
-	return []*schema.ResourceData{d}, nil
 }

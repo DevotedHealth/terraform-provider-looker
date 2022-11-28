@@ -25,7 +25,7 @@ resource "looker_group" "group" {
 
 - `name` (String)
 
-### Read-Only
+### Optional
 
 - `id` (String) The ID of this resource.
 

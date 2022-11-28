@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
 )
 
 func TestAcc_RoleGroups(t *testing.T) {
@@ -14,7 +16,7 @@ func TestAcc_RoleGroups(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: providers(),
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: roleGroupsConfig(name1),
@@ -28,7 +30,35 @@ func TestAcc_RoleGroups(t *testing.T) {
 				ImportStateVerify: true,
 			},
 		},
+		CheckDestroy: testAccCheckRoleGroupsDestroy,
 	})
+}
+
+func testAccCheckRoleGroupsDestroy(s *terraform.State) error {
+	client := testAccProvider.Meta().(*apiclient.LookerSDK)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "looker_role_groups" {
+			continue
+		}
+
+		roleGroupsID := rs.Primary.ID
+
+		groups, err := client.RoleGroups(roleGroupsID, "", nil)
+		if err != nil {
+			if strings.Contains(err.Error(), "404") {
+				return nil // successfully destroyed
+			}
+			return err
+		}
+
+		if len(groups) != 0 {
+			return fmt.Errorf("role_groups '%s' still exists", rs.Primary.ID)
+		}
+
+	}
+
+	return nil
 }
 
 func roleGroupsConfig(name string) string {

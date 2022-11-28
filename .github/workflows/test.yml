@@ -1,0 +1,41 @@
+name: test
+on:
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+  push:
+    paths-ignore:
+      - 'README.md'
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.49.0
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Check mod
+        run: make check-mod
+
+      - name: Check doc
+        run: make check-docs
+
+      - name: Test
+        run: make test
+
+# todo: add acceptance tests

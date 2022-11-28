@@ -1,6 +1,9 @@
 package looker
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/looker-open-source/sdk-codegen/go/rtl"
 	apiclient "github.com/looker-open-source/sdk-codegen/go/sdk/v4"
@@ -48,23 +51,28 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"looker_user":           resourceUser(),
-			"looker_user_roles":     resourceUserRoles(),
-			"looker_permission_set": resourcePermissionSet(),
-			"looker_model_set":      resourceModelSet(),
-			"looker_group":          resourceGroup(),
-			"looker_role":           resourceRole(),
-			"looker_role_groups":    resourceRoleGroups(),
-			"looker_user_attribute": resourceUserAttribute(),
+			"looker_user":                       resourceUser(),
+			"looker_user_roles":                 resourceUserRoles(),
+			"looker_permission_set":             resourcePermissionSet(),
+			"looker_model_set":                  resourceModelSet(),
+			"looker_group":                      resourceGroup(),
+			"looker_group_membership":           resourceGroupMembership(),
+			"looker_role":                       resourceRole(),
+			"looker_role_groups":                resourceRoleGroups(),
+			"looker_user_attribute":             resourceUserAttribute(),
+			"looker_user_attribute_user_value":  resourceUserAttributeUserValue(),
+			"looker_user_attribute_group_value": resourceUserAttributeGroupValue(),
+			"looker_connection":                 resourceConnection(),
+			"looker_lookml_model":               resourceLookMLModel(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"looker_role_users": dsRoleUsers(),
 		},
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	baseUrl := d.Get("base_url").(string)
 	clientID := d.Get("client_id").(string)
 	clientSecret := d.Get("client_secret").(string)
@@ -82,5 +90,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	authSession := rtl.NewAuthSession(apiSettings)
 	client := apiclient.NewLookerSDK(authSession)
 
-	return client, nil
+	return client, diag.Diagnostics{}
 }
