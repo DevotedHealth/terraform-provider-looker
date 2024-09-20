@@ -1,3 +1,5 @@
+[![Open in DevZero](https://assets.devzero.io/open-in-devzero.svg)](https://www.devzero.io/dashboard/recipes/new?repo-url=https://github.com/DevotedHealth/terraform-provider-looker)
+
 # Terraform Provider: Looker
 
 This is a terraform provider plugin for managing [Looker](https://www.looker.com/) accounts.
