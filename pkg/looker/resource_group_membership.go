@@ -68,12 +68,12 @@ func resourceGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m 
 		GroupId: targetGroupID,
 	}
 
-	users, err := client.AllGroupUsers(req, nil) // todo: imeplement paging
+	users, err := client.AllGroupUsers(req, nil) // todo: implement paging
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	groups, err := client.AllGroupGroups(targetGroupID, "", nil) // todo: imeplement paging
+	groups, err := client.AllGroupGroups(targetGroupID, "", nil) // todo: implement paging
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -177,7 +177,7 @@ func removeAllUsersFromGroup(m interface{}, groupID string) error {
 		GroupId: groupID,
 	}
 
-	users, err := client.AllGroupUsers(req, nil) // todo: imeplement paging
+	users, err := client.AllGroupUsers(req, nil) // todo: implement paging
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func removeAllUsersFromGroup(m interface{}, groupID string) error {
 
 func removeAllGroupsFromGroup(m interface{}, groupID string) error {
 	client := m.(*apiclient.LookerSDK)
-	groups, err := client.AllGroupGroups(groupID, "", nil) // todo: imeplement paging
+	groups, err := client.AllGroupGroups(groupID, "", nil) // todo: implement paging
 	if err != nil {
 		return err
 	}
